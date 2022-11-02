@@ -1,6 +1,36 @@
 const { Schema, model, Types } = require('mongoose');
 const moment = require('moment');
 
+const ReactionSchema = new Schema({
+    reactionId: {
+        type: Schema.Types.ObjectId,
+        default: () => new Types.ObjectId()
+    },
+    reactionBody: {
+        type: String,
+        required: true,
+        minlength: 1,
+        maxlength: 280
+    },
+    username: {
+        type: String,
+        required: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+        get: dateCreated => moment(dateCreated).format('MMM DD, YYYY hh:mm a')
+    }
+},
+    {
+        toJSON: {
+            virtuals: true,
+            getters: true
+        },
+        id: false
+    }
+);
+
 const thoughtSchema = new Schema(
     {
         thoughtText: {
@@ -12,7 +42,7 @@ const thoughtSchema = new Schema(
         createdAt: {
             type: Date,
             default: Date.now,
-            get: dateCreated => moment(dateCreated).format('MMM DD, YYYY - hh:mm a')
+            get: dateCreated => moment(dateCreated).format('MMM DD, YYYY hh:mm a')
 
         },
         username: {
@@ -33,35 +63,9 @@ const thoughtSchema = new Schema(
 );
 
 
-const ReactionSchema = new Schema({
-    reactionId: {
-        type: Schema.Types.ObjectId,
-        default: () => new Types.ObjectId()
-    },
-    reactionBody: {
-        type: String,
-        required: true,
-        minlength: 1,
-        maxlength: 280
-    },
-    username: {
-        type: String,
-        required: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-        get: dateCreated => moment(dateCreated).format('MMM DD, YYYY - hh:mm a')
-    }
-},
-    {
-        toJSON: {
-            virtuals: true,
-            getters: true
-        },
-        id: false
-    }
-);
+thoughtSchema.virtual('thoughtCount').get(function () {
+    return this.thoughtSchema.length;
+});
 
 
 thoughtSchema.virtual('reactionCount').get(function () {
