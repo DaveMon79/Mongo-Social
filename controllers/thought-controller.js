@@ -7,6 +7,7 @@ module.exports = {
         Thought.find()
             .select('-__v')
             .then((res) => res.json(res))
+            // console.log(res)
             .catch((err) => res.status(500).json(err));
 
     },
@@ -16,11 +17,12 @@ module.exports = {
     getThought(req, res) {
         Thought.findOne({ _id: req.params.thoughtId })
             .select('-__v')
-            .then((thought) =>
-                !thought
+            .then((thoughts) =>
+                !thoughts
                     ? res.status(404).json({ message: 'No thought with that ID' })
-                    : res.json(thought)
+                    : res.json(thoughts),
             )
+
             .catch((err) => res.status(500).json(err));
     },
 
@@ -32,17 +34,41 @@ module.exports = {
             { $set: req.body },
             { runValidators: true, new: true }
         )
-            .then((thought) =>
-                !thought
+            .then((thoughts) =>
+            // console.log(response),
+                !thoughts
                     ? res.status(404).json({ message: 'No thought with this id!' })
-                    : res.json(thought)
+                    : res.json(thoughts)
             )
             .catch((err) => {
                 res.status(500).json(err);
             });
     },
 
-
+    deleteThought(req, res) {
+        Thought.findOneAndDelete({ _id: req.params.thoughtId })
+          .then(thoughtData => {
+            if (!thoughtData) {
+              res.status(404).json({ message: 'No thoughts found with that id!' });
+              return;
+            }
+            return User.findOneAndUpdate(
+              { _id: req.body.userId },
+              { $pull: { thoughts: params.Id } },
+              { new: true }
+            )
+          })
+          .then(userData => {
+            if (!userData) {
+              res.status(404).json({ message: 'No User found with this id!' });
+              return;
+            }
+            console.log(userData)
+            res.json('Thought deleted 🎉');
+          })
+          .catch(err => res.json(err));
+      },
+    
 
     // Create a though and push thought ID to thoughts array in UserShema
     createThought(req, res) {

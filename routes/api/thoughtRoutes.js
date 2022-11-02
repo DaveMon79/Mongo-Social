@@ -1,6 +1,6 @@
 const router = require('express').Router();
 
-const { createThought, getAllThoughts, getThought, updateThought } = require('../../controllers/thought-controller');
+const { createThought, getAllThoughts, getThought, updateThought, deleteThought } = require('../../controllers/thought-controller');
 
 // Gets all users and creates a new user
 router.route('/')
@@ -8,7 +8,7 @@ router.route('/')
 
 router.route('/:thoughtId')
     .get(getThought)
-    .delete()
+    .delete(deleteThought)
     .put(updateThought)
 
 
