@@ -2,12 +2,47 @@ const { Thought, User } = require('../models');
 
 module.exports = {
 
+    createReaction(req, res) {
+        Thought.findOneAndUpdate(
+            { _id: req.params.thoughtId },
+            { $push: { reactions: req.body } },
+            { new: true })
+            .populate({ path: 'reactions', select: '-__v' })
+            .then((thoughtData) =>
+                !thoughtData
+                    ? res.status(404).json({
+                        message: 'Reaction created, but no thought found with that ID',
+                    })
+                    : res.json('Created reaction 🎉')
+            )
+            .catch((err) => {
+                console.log(err);
+                res.status(500).json(err);
+            });
+    },
+
+    deleteReaction(req, res) {
+        Thought.findOneAndUpdate(
+            { _id: req.params.thoughtId },
+            { $pull: { reactions: { reactionId: req.body.reactionId } } },
+            { new: true }
+        )
+            .then(thoughtData => {
+                if (!thoughtData) {
+                    res.status(404).json({ message: 'No reaction with that ID!' });
+                    return;
+                }
+                res.json(thoughtData);
+            })
+            .catch(err => res.json(err));
+    },
+
+
     // Get all thoughts
     getAllThoughts(req, res) {
         Thought.find()
             .select('-__v')
-            .then((res) => res.json(res))
-            // console.log(res)
+            .then((data) => res.json(data))
             .catch((err) => res.status(500).json(err));
 
     },
@@ -32,10 +67,9 @@ module.exports = {
         Thought.findOneAndUpdate(
             { _id: req.params.thoughtId },
             { $set: req.body },
-            { runValidators: true, new: true }
-        )
+            { runValidators: true, new: true })
+
             .then((thoughts) =>
-            // console.log(response),
                 !thoughts
                     ? res.status(404).json({ message: 'No thought with this id!' })
                     : res.json(thoughts)
@@ -45,32 +79,31 @@ module.exports = {
             });
     },
 
+    // Delete a thought from thought and user db
     deleteThought(req, res) {
         Thought.findOneAndDelete({ _id: req.params.thoughtId })
-          .then(thoughtData => {
-            if (!thoughtData) {
-              res.status(404).json({ message: 'No thoughts found with that id!' });
-              return;
-            }
-            return User.findOneAndUpdate(
-              { _id: req.body.userId },
-              { $pull: { thoughts: params.Id } },
-              { new: true }
+            .then((thoughtData) =>
+                !thoughtData
+                    ? res.status(404).json({ message: 'No thoughts with this id!' })
+                    : User.findOneAndUpdate(
+                        { thoughts: req.params.thoughtId },
+                        { $pull: { thoughts: req.params.thoughtId } },
+                        { new: true }
+                    )
             )
-          })
-          .then(userData => {
-            if (!userData) {
-              res.status(404).json({ message: 'No User found with this id!' });
-              return;
-            }
-            console.log(userData)
-            res.json('Thought deleted 🎉');
-          })
-          .catch(err => res.json(err));
-      },
-    
+            .then((userData) =>
+                !userData
+                    ? res.status(404).json({
+                        message: 'Thought deleted but no user with this id!',
+                    })
+                    : res.json({ message: 'Thought successfully deleted!' })
+            )
+            .catch((err) => res.status(500).json(err));
+    },
 
-    // Create a though and push thought ID to thoughts array in UserShema
+
+
+    // Creates a though and pushes thought ID to thoughts array in UserShema
     createThought(req, res) {
         Thought.create(req.body)
 
@@ -95,6 +128,11 @@ module.exports = {
             });
     }
 
+    // createReaction(req,res) {
+
+    // }
 
 
 }
+
+
