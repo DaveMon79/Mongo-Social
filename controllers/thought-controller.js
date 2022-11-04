@@ -27,12 +27,12 @@ module.exports = {
             { $pull: { reactions: { reactionId: req.body.reactionId } } },
             { new: true }
         )
-            .then(thoughtData => {
-                if (!thoughtData) {
+            .then(reactionData => {
+                if (!reactionData) {
                     res.status(404).json({ message: 'No reaction with that ID!' });
                     return;
                 }
-                res.json(thoughtData);
+                res.json(reactionData);
             })
             .catch(err => res.json(err));
     },
@@ -68,7 +68,6 @@ module.exports = {
             { _id: req.params.thoughtId },
             { $set: req.body },
             { runValidators: true, new: true })
-
             .then((thoughts) =>
                 !thoughts
                     ? res.status(404).json({ message: 'No thought with this id!' })
@@ -127,11 +126,6 @@ module.exports = {
                 res.status(500).json(err);
             });
     }
-
-    // createReaction(req,res) {
-
-    // }
-
 
 }
 

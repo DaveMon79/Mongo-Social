@@ -48,15 +48,51 @@ module.exports = {
     // Delete a user 
     deleteUser(req, res) {
         User.findOneAndDelete({ _id: req.params.userId })
-          .then((user) =>
-            !user
-              ? res.status(404).json({ message: 'No user with that ID' })
-              : Thought.deleteMany({ _id: { $in: user.thought } })
-          )
-          .then(() => res.json({ message: 'User and associated apps deleted!' }))
-          .catch((err) => res.status(500).json(err));
-      },
-    };
+            .then((user) =>
+                !user
+                    ? res.status(404).json({ message: 'No user with that ID' })
+                    : Thought.deleteMany({ _id: { $in: user.thought } })
+            )
+            .then(() => res.json({ message: 'User and associated apps deleted!' }))
+            .catch((err) => res.status(500).json(err));
+    },
+
+    addFriend(req, res) {
+        User.findOneAndUpdate(
+            { _id: req.params.userId },
+            { $push: { friends: req.body.userId } },
+            { new: true })
+            .populate({ path: 'friends', select: '-__v' })
+            .then((friendData) =>
+                !friendData
+                    ? res.status(404).json({
+                        message: 'No user found with that ID',
+                    })
+                    : res.json('Friend added 🎉', friendData)
+            )
+            .catch((err) => {
+                console.log(err);
+                res.status(500).json(err);
+            });
+    },
+
+    deleteFriend(req, res) {
+        User.findOneAndUpdate(
+            { _id: req.params.userId },
+            { $pull: { friends: { ObjectId: req.body.userId } } },
+            { new: true }
+        )
+            .then(friendData => {
+                if (!friendData) {
+                    res.status(404).json({ message: 'No user found with that ID!' });
+                    return;
+                }
+                res.json(friendData);
+            })
+            .catch(err => res.json(err));
+    },
+
+};
 
 
 
