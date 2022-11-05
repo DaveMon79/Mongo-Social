@@ -1,19 +1,23 @@
+// Importing User & thought models
 const { Thought, User } = require('../models');
 
+// exporting api functions
 module.exports = {
 
+    // Creates a reaction to a thought
     createReaction(req, res) {
         Thought.findOneAndUpdate(
             { _id: req.params.thoughtId },
             { $push: { reactions: req.body } },
             { new: true })
             .populate({ path: 'reactions', select: '-__v' })
-            .then((thoughtData) =>
-                !thoughtData
+            .select('-__v')
+            .then((reactionData) =>
+                !reactionData
                     ? res.status(404).json({
                         message: 'Reaction created, but no thought found with that ID',
                     })
-                    : res.json('Created reaction 🎉')
+                    : res.json(['Created reaction 🎉', reactionData])
             )
             .catch((err) => {
                 console.log(err);
@@ -21,18 +25,20 @@ module.exports = {
             });
     },
 
+    // Deletes a thought by ID
     deleteReaction(req, res) {
         Thought.findOneAndUpdate(
             { _id: req.params.thoughtId },
             { $pull: { reactions: { reactionId: req.body.reactionId } } },
             { new: true }
         )
+        .select('-__v')
             .then(reactionData => {
                 if (!reactionData) {
                     res.status(404).json({ message: 'No reaction with that ID!' });
                     return;
                 }
-                res.json(reactionData);
+                res.json(['Deleted reaction 🎉', reactionData]);
             })
             .catch(err => res.json(err));
     },
@@ -40,7 +46,7 @@ module.exports = {
 
     // Get all thoughts
     getAllThoughts(req, res) {
-        Thought.find()
+        Thought.find({})
             .select('-__v')
             .then((data) => res.json(data))
             .catch((err) => res.status(500).json(err));
@@ -67,7 +73,8 @@ module.exports = {
         Thought.findOneAndUpdate(
             { _id: req.params.thoughtId },
             { $set: req.body },
-            { runValidators: true, new: true })
+            { new: true })
+            .select('-__v')
             .then((thoughts) =>
                 !thoughts
                     ? res.status(404).json({ message: 'No thought with this id!' })
@@ -81,6 +88,7 @@ module.exports = {
     // Delete a thought from thought and user db
     deleteThought(req, res) {
         Thought.findOneAndDelete({ _id: req.params.thoughtId })
+        .select('-__v')
             .then((thoughtData) =>
                 !thoughtData
                     ? res.status(404).json({ message: 'No thoughts with this id!' })
@@ -95,7 +103,7 @@ module.exports = {
                     ? res.status(404).json({
                         message: 'Thought deleted but no user with this id!',
                     })
-                    : res.json({ message: 'Thought successfully deleted!' })
+                    : res.json({ message: 'Thought successfully deleted! 🎉', userData })
             )
             .catch((err) => res.status(500).json(err));
     },
@@ -105,26 +113,24 @@ module.exports = {
     // Creates a though and pushes thought ID to thoughts array in UserShema
     createThought(req, res) {
         Thought.create(req.body)
-
             .then((response) => {
-                console.log("----------------")
                 return User.findOneAndUpdate(
                     { _id: req.params.userId },
                     { $addToSet: { thoughts: response._id } },
                     { new: true }
                 );
             })
-
+            
             .then((user) =>
                 !user
                     ? res.status(404).json({
                         message: 'Thought created, but found no user with that ID',
                     })
-                    : res.json('Thought created 🎉')
+                    : res.json(['Thought created 🎉', user])
             )
             .catch((err) => {
                 res.status(500).json(err);
-            });
+            })
     }
 
 }

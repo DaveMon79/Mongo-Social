@@ -1,10 +1,13 @@
+// Importing User & thought models
 const { Thought, User } = require('../models');
 
+// exporting api functions
 module.exports = {
 
     // Get all users
     getUsers(req, res) {
         User.find()
+        .select('-__v')
             .then((users) => res.json(users))
             .catch((err) => res.status(500).json(err));
     },
@@ -12,6 +15,7 @@ module.exports = {
     // Get a single user
     getSingleUser(req, res) {
         User.findOne({ _id: req.params.userId })
+        .select('-__v')
             .then((user) =>
                 !user
                     ? res.status(404).json({ message: 'No user with that ID' })
@@ -57,6 +61,8 @@ module.exports = {
             .catch((err) => res.status(500).json(err));
     },
 
+
+    // Adds a friend to a user
     addFriend(req, res) {
         User.findOneAndUpdate(
             { _id: req.params.userId },
@@ -68,7 +74,7 @@ module.exports = {
                     ? res.status(404).json({
                         message: 'No user found with that ID',
                     })
-                    : res.json('Friend added 🎉', friendData)
+                    : res.json([`Friend added 🎉`, friendData])
             )
             .catch((err) => {
                 console.log(err);
@@ -76,10 +82,11 @@ module.exports = {
             });
     },
 
+    // Deletes a friend from a user
     deleteFriend(req, res) {
         User.findOneAndUpdate(
             { _id: req.params.userId },
-            { $pull: { friends: { ObjectId: req.body.userId } } },
+            { $pull: { friends: req.body.userId  } },
             { new: true }
         )
             .then(friendData => {
@@ -87,7 +94,7 @@ module.exports = {
                     res.status(404).json({ message: 'No user found with that ID!' });
                     return;
                 }
-                res.json(friendData);
+                res.json([`Friend deleted 🎉`, friendData]);
             })
             .catch(err => res.json(err));
     },

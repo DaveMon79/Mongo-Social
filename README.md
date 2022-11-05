@@ -55,7 +55,7 @@ In Terminal type "npm i". This will install all the pre added dependancies you'l
   
 # Usage
   
-To use this appilcation type "npm run seed" in to terminal. This will create the database and seed the tables ready for use, then type "npm start" to activate the application. 
+To use this appilcation type "npm start", this will create the database and activate the application. 
 
 
 # License
@@ -67,6 +67,7 @@ To use this appilcation type "npm run seed" in to terminal. This will create the
 
 # Screenshot
 
+![image](https://user-images.githubusercontent.com/103275458/200116110-86e645d0-3d4f-46da-af8f-39f5db97cb39.png)
 
 # Links
 
@@ -74,7 +75,7 @@ To use this appilcation type "npm run seed" in to terminal. This will create the
 
 [Github Live URL](https://davemon79.github.io/Mongo-Social)
 
-[Video link displaying functionality]() 
+[Video link displaying functionality](https://drive.google.com/file/d/1kuXyjPEOWaSgrzXvCI7yjEmGg_bI6Mud/view) 
 
   
 # Contributing
